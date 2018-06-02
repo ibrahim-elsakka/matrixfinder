@@ -2,7 +2,7 @@
 #include <windows.h>
 #include <TlHelp32.h>
 #include <vector>
-
+#pragma warning(disable:4996)
 class RPM {
 private:
 	DWORD Proc_ID;
@@ -168,5 +168,21 @@ public:
 		byte first = this->read<BYTE>(Offset + 4);
 		DWORD Offset2 = this->read<DWORD>(Offset);
 		return Offset + Offset2 + 4;
+	}
+
+	std::wstring readpChar(DWORD64 address) {
+		//return L"";
+		try {
+			if (address != 0) {
+				const size_t namesize = 200;
+				char x[namesize];
+				ReadProcessMemory(this->hProcess, (LPCVOID)address, &x, namesize, NULL);
+				std::wstring tmpname = std::wstring(&x[0], &x[namesize]);
+				wchar_t* czech = wcstok(&tmpname[0], L"\0");
+				if (czech != nullptr) return czech;
+			}
+		}
+		catch (const std::exception &exc) {}
+		return std::wstring(L"\0");
 	}
 };
